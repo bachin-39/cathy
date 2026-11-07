@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Catvenox ♱ Dark Crimson Sanctuary</title>
+    <!-- Google Fonts phong cách Gothic / Tây Âu huyền bí -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Quicksand:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-red: #ff1c44;
+            --dark-red-glow: rgba(255, 28, 68, 0.55);
+            --bg-card: rgba(14, 2, 4, 0.88);
+            --card-border: #ff1c44;
+            --text-main: #f5e6e8;
+            --dashed-border: rgba(255, 45, 80, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #050002;
+            font-family: 'Quicksand', sans-serif;
+            color: var(--text-main);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Lớp nền phong cảnh random + hiệu ứng tối mờ Gothic */
+        .bg-scenery {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.8s ease-in-out, filter 0.5s ease;
+            filter: brightness(0.65) contrast(1.15) saturate(1.1);
+            z-index: 0;
+        }
+
+        /* Lớp vignette huyền ảo viền đen đỏ */
+        .vignette-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 35%, rgba(10, 0, 3, 0.85) 90%),
+                        linear-gradient(to bottom, rgba(20, 0, 5, 0.4), rgba(0, 0, 0, 0.8));
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Mèo nhỏ bay xung quanh */
+        .floating-cat {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            z-index: 10;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 10px rgba(255, 40, 80, 0.7));
+            animation: floatSlow 7s ease-in-out infinite alternate;
+        }
+
+        .floating-cat:hover {
+            transform: scale(1.35) rotate(10deg);
+        }
+
+        .floating-cat .bubble {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 2, 6, 0.9);
+            border: 1px solid var(--primary-red);
+            color: #ff99aa;
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .floating-cat:hover .bubble {
+            opacity: 1;
+        }
+
+        @keyframes floatSlow {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-18px) rotate(4deg); }
+            100% { transform: translateY(10px) rotate(-4deg); }
+        }
+
+        /* Menu điều khiển phía dưới */
+        .dock-nav {
+            position: absolute;
+            bottom: 25px;
+            z-index: 20;
+            display: flex;
+            gap: 15px;
+            background: rgba(18, 1, 4, 0.75);
+            padding: 8px 18px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 30, 70, 0.4);
+            box-shadow: 0 0 20px rgba(255, 0, 50, 0.25);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #ffc2cc;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            letter-spacing: 1px;
+            padding: 7px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255, 28, 68, 0.18);
+            border-color: var(--primary-red);
+            color: #ffffff;
+            box-shadow: 0 0 15px var(--dark-red-glow);
+            text-shadow: 0 0 8px #ff4d6d;
+        }
+
+        /* KHUNG MODAL CARDS CHÍNH (Đồng bộ chuẩn giao diện ẢNH 1 & ẢNH 2) */
+        .modal-container {
+            position: relative;
+            z-index: 15;
+            width: 90%;
+            max-width: 530px;
+            background: var(--bg-card);
+            border: 2px solid var(--card-border);
+            border-radius: 26px;
+            box-shadow: 0 0 35px var(--dark-red-glow), inset 0 0 25px rgba(255, 20, 60, 0.22);
+            padding: 24px 26px 28px;
+            backdrop-filter: blur(14px);
+            animation: cardEntrance 0.45s ease-out;
+            display: none;
+        }
+
+        .modal-container.active {
+            display: block;
+        }
+
+        @keyframes cardEntrance {
+            from {
+                opacity: 0;
+                transform: scale(0.92) translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Tiêu đề Modal ♡ ABOUT ME ♡ */
+        .modal-header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 21px;
+            letter-spacing: 3px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(255, 90, 120, 0.9), 0 0 25px rgba(255, 28, 68, 0.6);
+            display: inline-block;
+        }
+
+        /* Nút dấu X đóng thẻ */
+        .close-btn {
+            position: absolute;
+            top: 2px;
+            right: 0px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+        }
+
+        .close-btn:hover {
+            color: var(--primary-red);
+            transform: scale(1.15) rotate(90deg);
+        }
+
+        /* Khung viền nét đứt bo góc bên trong (Inner Dashed Box) */
+        .inner-box {
+            border: 1.5px dashed var(--dashed-border);
+            border-radius: 18px;
+            padding: 20px 22px;
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        /* Kiểu chữ nội dung About Me */
+        .tree-list {
+            font-size: 14.5px;
+            line-height: 2.1;
+            color: #f7e6e9;
+            letter-spacing: 0.3px;
+        }
+
+        .tree-line {
+            display: flex;
+            align-items: baseline;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .tree-branch {
+            color: rgba(255, 120, 140, 0.8);
+            font-family: monospace;
+            margin-right: 6px;
+            user-select: none;
+        }
+
+        .bold-tag {
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            margin-right: 4px;
+        }
+
+        .gothic-italic {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Kiểu chữ Loved One */
+        .loved-content {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #fcecef;
+            text-align: center;
+            word-spacing: 1px;
+            padding: 6px 4px;
+        }
+
+        /* Nút đổi nền góc trên */
+        .random-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(18, 0, 4, 0.75);
+            border: 1px solid var(--primary-red);
+            color: #ff99aa;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 20;
+            transition: 0.3s;
+            box-shadow: 0 0 12px rgba(255, 20, 60, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .random-badge:hover {
+            background: var(--primary-red);
+            color: white;
+            box-shadow: 0 0 20px var(--primary-red);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 600px) {
+            .modal-container {
+                width: 92%;
+                padding: 20px 16px 22px;
+                border-radius: 20px;
+            }
+            .modal-title {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+            .inner-box {
+                padding: 16px 14px;
+            }
+            .tree-list {
+                font-size: 13.5px;
+                line-height: 2;
+            }
+            .dock-nav {
+                bottom: 18px;
+                gap: 8px;
+                padding: 6px 12px;
+            }
+            .nav-btn {
+                font-size: 11.5px;
+                padding: 6px 12px;
+            }
+            .random-badge {
+                top: 14px;
+                right: 14px;
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Lớp cảnh nền random phong cách cổ điển huyền bí như ảnh 3 -->
+    <div class="bg-scenery" id="scenery"></div>
+    <div class="vignette-overlay"></div>
+
+    <!-- Nút đổi cảnh ngẫu nhiên trên góc -->
+    <button class="random-badge" onclick="randomizeScenery()" title="Đổi cảnh ngẫu nhiên">
+        <span>🎲</span> Đổi Cảnh
+    </button>
+
+    <!-- Những chú mèo con lơ lửng xung quanh (Floating Cats) -->
+    <div class="floating-cat" style="top: 18%; left: 12%; animation-delay: 0s;">
+        <span class="bubble">meow~ 🐾</span>
+        <svg viewBox="0 0 64 64" fill="none">
+            <path d="M14 20 L24 8 L30 20 Z" fill="#2d050c" stroke="#ff3366" stroke-width="2"/>
+            <path d="M50 20 L40 8 L34 20 Z" fill="#2d050c" stroke="#ff3366" stroke-width="2"/>
+            <circle cx="32" cy="34" r="22" fill="#150005" stroke="#ff1c44" stroke-width="2.5"/>
+            <ellipse cx="24" cy="32" rx="3.5" ry="5" fill="#ff4d79"/>
+            <ellipse cx="40" cy="32" rx="3.5" ry="5" fill="#ff4d79"/>
+            <polygon points="32,40 30,43 34,43" fill="#ffffff"/>
+            <path d="M12 34 L2 32 M12 38 L3 41 M52 34 L62 32 M52 38 L61 41" stroke="#ff4d79" stroke-width="1.8"/>
+        </svg>
+    </div>
+
+    <div class="floating-cat" style="bottom: 22%; left: 10%; animation-delay: 2.5s;">
+        <span class="bubble">purr... ฅ^•ﻌ•^ฅ</span>
+        <svg viewBox="0 0 64 64" fill="none">
+            <path d="M16 22 L24 10 L30 21 Z" fill="#1a0106" stroke="#ff2a55" stroke-width="2"/>
+            <path d="M48 22 L40 10 L34 21 Z" fill="#1a0106" stroke="#ff2a55" stroke-width="2"/>
+            <circle cx="32" cy="35" r="21" fill="#100004" stroke="#ff2a55" stroke-width="2.5"/>
+            <path d="M22 33 Q25 30 28 33" stroke="#ff8099" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M36 33 Q39 30 42 33" stroke="#ff8099" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="32" cy="41" r="2" fill="#ff4d79"/>
+        </svg>
+    </div>
+
+    <div class="floating-cat" style="top: 25%; right: 12%; animation-delay: 4.5s;">
+        <span class="bubble">nya~ ♡</span>
+        <svg viewBox="0 0 64 64" fill="none">
+            <path d="M15 22 L22 11 L29 20 Z" fill="#220208" stroke="#ff4466" stroke-width="2"/>
+            <path d="M49 22 L42 11 L35 20 Z" fill="#220208" stroke="#ff4466" stroke-width="2"/>
+            <circle cx="32" cy="34" r="21" fill="#150005" stroke="#ff1c44" stroke-width="2.5"/>
+            <circle cx="23" cy="32" r="4" fill="#ff6688"/>
+            <circle cx="41" cy="32" r="4" fill="#ff6688"/>
+            <path d="M29 41 Q32 44 35 41" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <!-- MODAL 1: ABOUT ME (Ảnh 1) -->
+    <div class="modal-container active" id="modalAbout">
+        <div class="modal-header">
+            <h2 class="modal-title">♡ ABOUT ME ♡</h2>
+            <div class="close-btn" onclick="closeAllModals()">✕</div>
+        </div>
+        <div class="inner-box">
+            <div class="tree-list">
+                <div class="tree-line"><span class="tree-branch">╭</span>@catvenox ♡‧₊˚</div>
+                <div class="tree-line"><span class="tree-branch">┆</span>“ theyノthem ”</div>
+                <div class="tree-line"><span class="tree-branch">┆</span>⋆˚ 🧸 ‧˚ 19</div>
+                <div class="tree-line"><span class="tree-branch">┆</span>✂ <span class="bold-tag">Loves:</span> sweets, cats, music</div>
+                <div class="tree-line"><span class="tree-branch">┆</span>☁ <span class="bold-tag">Into:</span> sleeping, movies, shopping</div>
+                <div class="tree-line"><span class="tree-branch">┆</span>🍰 <span class="bold-tag">Obsessed with:</span> desserts & late-night snacks</div>
+                <div class="tree-line"><span class="tree-branch">╰</span>➤ 𝘭ວ <span class="gothic-italic">Living on Snacks</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LOVED ONE (Ảnh 2) -->
+    <div class="modal-container" id="modalLoved">
+        <div class="modal-header">
+            <h2 class="modal-title">♡ LOVED ONE ♡</h2>
+            <div class="close-btn" onclick="closeAllModals()">✕</div>
+        </div>
+        <div class="inner-box">
+            <div class="loved-content">
+                Qiao (con), hòn (chồng), cá (bạn nghẹo), mochi (vợ), cici (vợ của con), hera (con crt nợ comm)
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCK MENU DƯỚI ĐÁY ĐỂ CHỌN MỤC -->
+    <nav class="dock-nav">
+        <button class="nav-btn active" id="btnAbout" onclick="openModal('about')">♡ About Me ♡</button>
+        <button class="nav-btn" id="btnLoved" onclick="openModal('loved')">♡ Loved One ♡</button>
+    </nav>
+
+    <script>
+        // Danh sách tranh phong cảnh phong cách Á Đông / Sơn Thủy / Tây Âu huyền ảo tương tự ảnh 3
+        const scenicBackgrounds = [
+            "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1920&auto=format&fit=crop", // Lâu đài gothic huyền ảo
+            "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1920&auto=format&fit=crop", // Đỏ đen kiếm hiệp / phong cảnh
+            "https://images.unsplash.com/photo-1514565131-fce0801e5785?q=80&w=1920&auto=format&fit=crop", // Ánh đèn đỏ huyền bí
+            "https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=1920&auto=format&fit=crop", // Chùa cổ sương mây
+            "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1920&auto=format&fit=crop"  // Cực quang mộng ảo
+        ];
+
+        let currentBgIndex = -1;
+
+        // Hàm random cảnh nền không trùng cảnh vừa hiển thị
+        function randomizeScenery() {
+            let nextIndex;
+            do {
+                nextIndex = Math.floor(Math.random() * scenicBackgrounds.length);
+            } while (nextIndex === currentBgIndex && scenicBackgrounds.length > 1);
+
+            currentBgIndex = nextIndex;
+            const sceneryEl = document.getElementById('scenery');
+            sceneryEl.style.backgroundImage = `url('${scenicBackgrounds[currentBgIndex]}')`;
+        }
+
+        // Chuyển đổi giữa About Me và Loved One
+        function openModal(type) {
+            const modalAbout = document.getElementById('modalAbout');
+            const modalLoved = document.getElementById('modalLoved');
+            const btnAbout = document.getElementById('btnAbout');
+            const btnLoved = document.getElementById('btnLoved');
+
+            if (type === 'about') {
+                modalAbout.classList.add('active');
+                modalLoved.classList.remove('active');
+                btnAbout.classList.add('active');
+                btnLoved.classList.remove('active');
+            } else if (type === 'loved') {
+                modalLoved.classList.add('active');
+                modalAbout.classList.remove('active');
+                btnLoved.classList.add('active');
+                btnAbout.classList.remove('active');
+            }
+        }
+
+        // Đóng các modal khi bấm dấu ✕
+        function closeAllModals() {
+            document.getElementById('modalAbout').classList.remove('active');
+            document.getElementById('modalLoved').classList.remove('active');
+            document.getElementById('btnAbout').classList.remove('active');
+            document.getElementById('btnLoved').classList.remove('active');
+        }
+
+        // Tự động random ảnh nền khi vừa load trang
+        window.addEventListener('DOMContentLoaded', () => {
+            randomizeScenery();
+        });
+    </script>
+</body>
+</html>
